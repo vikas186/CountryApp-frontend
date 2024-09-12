@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCountries, setPage } from '../slices/countrySlice';
 import {
@@ -11,28 +11,30 @@ import {
   Box,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from './LoadingSpinner'; // Import the LoadingSpinner component
+import LoadingSpinner from './LoadingSpinner';
 
 const CountryList = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
   const { countries, status, page, totalPages } = useSelector((state) => state.country);
-  const [loadingDetail, setLoadingDetail] = useState(null); // State for loading detail
+  const [loadingDetail, setLoadingDetail] = React.useState(null);
 
   useEffect(() => {
-    dispatch(fetchCountries({ page, limit: 8 }));
+    // Ensure that the page parameter is correctly set
+    console.log(`Fetching countries for page ${page}`);
+    dispatch(fetchCountries({ page, limit: 8, name: '' }));
   }, [dispatch, page]);
 
   const handlePageChange = (event, value) => {
+    console.log(`Page changed to ${value}`); // Debug log
     dispatch(setPage(value));
   };
 
   const handleViewDetailsClick = (cca3) => {
-    setLoadingDetail(cca3); // Set loading for the specific country
-    // Use a delay to ensure spinner is visible
+    setLoadingDetail(cca3);
     setTimeout(() => {
-      navigate(`/details/${cca3}`); // Navigate after delay
-    }, 500); // Adjust delay as needed
+      navigate(`/details/${cca3}`);
+    }, 500);
   };
 
   return (
@@ -106,10 +108,10 @@ const CountryList = () => {
                           color="primary"
                           sx={{ width: '100%', mt: 1, position: 'relative' }}
                           onClick={() => handleViewDetailsClick(country.cca3)}
-                          disabled={loadingDetail === country.cca3} // Disable button when loading
+                          disabled={loadingDetail === country.cca3}
                         >
                           {loadingDetail === country.cca3 ? (
-                            <LoadingSpinner /> // Use LoadingSpinner here
+                            <LoadingSpinner />
                           ) : (
                             'View Details'
                           )}

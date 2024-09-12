@@ -5,26 +5,24 @@ const API_URL = 'http://localhost:4000/api';
 
 // Thunk for fetching countries with pagination and search capabilities
 export const fetchCountries = createAsyncThunk(
-  'country/fetchCountries',
-  async ({ page = 1, limit = 8, search = '' }, { rejectWithValue }) => {
+  'country/searchCountries',
+  async ({ page = 1, limit = 8, name = '' }, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/all`, {
-        params: { page, limit, search },
+        params: { page, limit, name },
       });
       if (!response.data || !response.data.countries) {
         throw new Error('Unexpected response structure');
       }
-
-      return response.data; 
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
-
 // Thunk for fetching details of a single country by its code
 export const fetchCountryDetails = createAsyncThunk(
-  'country/fetchCountryDetails',
+  'country/getCountryDetails',
   async (code, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/alpha/${code}`);
@@ -40,10 +38,10 @@ const countrySlice = createSlice({
   initialState: {
     countries: [],
     countryDetails: null,
-    totalCountries: 0, // Total number of countries returned by the backend
-    page: 1, // Current page
-    totalPages: 0, // Total number of pages available
-    status: 'idle', // 'idle', 'loading', 'succeeded', 'failed'
+    totalCountries: 0,
+    page: 1,
+    totalPages: 0,
+    status: 'idle',
     error: null,
   },
   reducers: {
@@ -63,7 +61,7 @@ const countrySlice = createSlice({
         state.status = 'succeeded';
         state.countries = action.payload.countries;
         state.totalCountries = action.payload.totalCountries;
-        state.page = action.payload.page;
+        state.page = action.payload.currentPage; // Ensure currentPage from response is used
         state.totalPages = action.payload.totalPages;
       })
       .addCase(fetchCountries.rejected, (state, action) => {
